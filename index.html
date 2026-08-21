@@ -63,6 +63,8 @@ header{position:fixed;inset:0 0 auto 0;z-index:70;display:flex;align-items:cente
 header:not(.solid) .brand{text-shadow:0 1px 14px rgba(20,18,15,.55)}
 header.solid{background:#fff;color:var(--ink);border-bottom-color:var(--line)}
 header.solid .brand{text-shadow:none}
+body.menu-open header{display:none}
+body.menu-open{overflow:hidden}
 .brand{display:flex;align-items:center;gap:12px;cursor:pointer;font-family:var(--disp);font-size:13px;
   font-weight:300;letter-spacing:.3em;text-transform:uppercase}
 .brand .mark{width:44px;height:auto}
@@ -86,7 +88,7 @@ header.solid .menu a{color:var(--muted)}
 .burger{display:none;width:26px;height:14px;position:relative;background:none;border:0;cursor:pointer}
 .burger i{position:absolute;left:0;right:0;height:1px;background:currentColor;transition:.3s}
 .burger i:first-child{top:0}.burger i:last-child{bottom:0}
-.drawer{position:fixed;inset:0;z-index:65;background:#fff;display:none;flex-direction:column;
+.drawer{position:fixed;inset:0;z-index:85;background:#fff;display:none;flex-direction:column;
   align-items:center;justify-content:center;gap:26px;padding:70px 20px 40px;
   overflow-y:auto;text-align:center;width:100%}
 .drawer.open{display:flex}
@@ -123,6 +125,10 @@ header.solid .menu a{color:var(--muted)}
   border-left:1px solid rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.7);
   transform:rotate(-45deg)}
 @media(max-width:760px){.hero{height:85vh}}
+/* на компьютере текст опускаем ниже — на светлой крыше он не читается */
+@media(min-width:761px){
+  .hero-in{justify-content:flex-end;padding-bottom:15vh}
+}
 
 /* ——— домики ——— */
 .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(24px,4vw,60px)}
@@ -577,12 +583,23 @@ footer{background:var(--warm2);color:var(--ink);padding:var(--gap) 0 30px;text-a
   onScroll(); window.addEventListener('scroll',onScroll,{passive:true});
 
   var drawer=document.getElementById('drawer');
-  document.getElementById('burger').addEventListener('click',function(){ drawer.classList.add('open'); });
-  function closeDrawer(){ drawer.classList.remove('open'); }
+  document.getElementById('burger').addEventListener('click',function(){
+    drawer.classList.add('open');
+    document.body.classList.add('menu-open');
+  });
+  function closeDrawer(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    drawer.classList.remove('open');
+    document.body.classList.remove('menu-open');
+  }
   document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
-  document.getElementById('closeDrawer').addEventListener('touchstart', function(e){ e.preventDefault(); closeDrawer(); }, {passive:false});
-  drawer.addEventListener('click', function(e){ if(e.target === drawer) closeDrawer(); });
-  drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click',function(){ drawer.classList.remove('open'); }); });
+  drawer.addEventListener('click', function(e){ if(e.target === drawer) closeDrawer(e); });
+  drawer.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      drawer.classList.remove('open');
+      document.body.classList.remove('menu-open');
+    });
+  });
 
   /* якорные ссылки: прокрутка внутри страницы, без перехода по адресу */
   document.addEventListener('click', function(e){
@@ -592,6 +609,7 @@ footer{background:var(--warm2);color:var(--ink);padding:var(--gap) 0 30px;text-a
     if(!el) return;
     e.preventDefault();
     drawer.classList.remove('open');
+    document.body.classList.remove('menu-open');
     el.scrollIntoView({behavior:'smooth', block:'start'});
   });
 
